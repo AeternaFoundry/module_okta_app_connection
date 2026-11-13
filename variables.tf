@@ -34,5 +34,29 @@ EOT
       token = optional(string)
     })))
   }))
+  validation {
+    condition = alltrue([
+      for k, v in var.app_connections : (
+        contains(["activate", "deactivate"], v.action)
+      )
+    ])
+    error_message = "must be one of: \"activate\", \"deactivate\""
+  }
+  validation {
+    condition = alltrue([
+      for k, v in var.app_connections : (
+        v.profile == null || alltrue([for item in v.profile : (contains(["TOKEN", "OAUTH2"], item.auth_scheme))])
+      )
+    ])
+    error_message = "must be one of: \"TOKEN\", \"OAUTH2\""
+  }
+  validation {
+    condition = alltrue([
+      for k, v in var.app_connections : (
+        v.profile == null || alltrue([for item in v.profile : (item.signing == null || alltrue([for item in item.signing : (item.rotation_mode == null || (contains(["AUTO", "MANUAL"], item.rotation_mode)))]))])
+      )
+    ])
+    error_message = "must be one of: \"AUTO\", \"MANUAL\""
+  }
 }
 
